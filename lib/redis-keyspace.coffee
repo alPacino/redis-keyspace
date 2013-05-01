@@ -1,15 +1,15 @@
 # Copyright (C) 2011 by Louis-Philippe Perron
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,7 +27,7 @@ Multi = redis.Multi
 exports.createClient = (port=6379, host='127.0.0.1', options={}) ->
   if _(port).isNumber() and _(host).isString()
     new RedisKeyspace(port, host, options)
-    
+
 exports.print = (err, reply) ->
   redis.print(err, reply)
 
@@ -42,7 +42,7 @@ ODDS_KEY = 5
 SORT_KEY = 6
 STORE_KEY = 7
 UNKNOWN_KEY = 8
-COMMANDS = 
+COMMANDS =
   append: FIRST_KEY
   blpop: NOT_LAST_KEY
   brpop: NOT_LAST_KEY
@@ -141,19 +141,19 @@ generate_key = (key, prefix) ->
     prefix + ":" + key
   else
     key
-    
+
 remove_key = (key, prefix) ->
   if prefix?
     key.substr(prefix.length+1)
   else
     key
-    
+
 isEven = (num) ->
   if num % 2 is 0
     true
   else
     false
-    
+
 parse_sort_keys = (args, prefix) ->
   new_args = []
   _.each(args, (arg, index) ->
@@ -216,15 +216,16 @@ class MultiKeyspace extends Multi
     else
       @prefix = null
     super(client,args)
-    
+
   exec: (callback) ->
+    that = @
     @queue = _.map(@queue, (args) ->
       if COMMANDS[args[0]]?
         if args[0] is 'hmset' or args[0] is 'HMSET'
           args = parse_hmset_args(args[1..args.length])
           args.unshift('hmset')
         key_pos = COMMANDS[args[0]]
-        prefix_args(args, key_pos, @prefix)
+        prefix_args(args, key_pos, that.prefix)
       else
         args
     )
@@ -236,20 +237,20 @@ class RedisKeyspace extends RedisClient
       do (name, key_pos) ->
         cmd_func = (_args...) ->
           args = _.toArray(_args)
-          
+
           if _.isArray args[0]
             ob = args.shift()
             args = ob.concat(args)
-          
+
           func = null
           if typeof args[args.length-1] is 'function'
             func = args.pop()
-          
+
           if name is 'hmset'
             args = parse_hmset_args(args)
           else if name is 'hmget'
             args = _.flatten(args)
-          
+
           args = prefix_args(args, key_pos, @options['prefix'])
           if func?
             @send_command name, args, func
@@ -259,7 +260,7 @@ class RedisKeyspace extends RedisClient
         RedisKeyspace::[name.toUpperCase()] = cmd_func
     net_client = net.createConnection(port, host)
     super(net_client, @options)
-  
+
   multi: (args) -> new MultiKeyspace(this, args)
   MULTI: (args) -> new MultiKeyspace(this, args)
   return_reply: (reply) ->
