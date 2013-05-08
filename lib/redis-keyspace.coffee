@@ -89,6 +89,7 @@ COMMANDS =
   msetnx: ODDS_KEY
   object: LAST_KEY
   persist: FIRST_KEY
+  publish: FIRST_KEY
   rename: ALL_KEYS
   renamenx: ALL_KEYS
   rpop: FIRST_KEY
@@ -114,10 +115,12 @@ COMMANDS =
   srandmember: FIRST_KEY
   srem: FIRST_KEY
   strlen: FIRST_KEY
+  subscribe: ALL_KEYS
   sunion: ALL_KEYS
   sunionstore: ALL_KEYS
   ttl: FIRST_KEY
   type: FIRST_KEY
+  unsubscribe: ALL_KEYS
   watch: ALL_KEYS
   zadd: FIRST_KEY
   zcard: FIRST_KEY
